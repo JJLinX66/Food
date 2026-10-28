@@ -9,25 +9,25 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Orbitron", system-ui, sans-serif;
+            字体族: "Orbitron", 系统字体, 无衬线体;
         }
-        body {
-            min-height: 100vh;
+        主体 {
+            最小高度: 100视口高度;
             background: #050816;
             background-image: 
-                radial-gradient(circle at 20% 20%, rgba(0,180,255,0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(255,0,120,0.12) 0%, transparent 40%);
+                径向渐变(圆 位于 20% 20%, rgba(0,180,255,0.15) 0%, 透明 40%),
+                径向渐变(圆形 位于 80% 80%, rgba(255,0,120,0.12) 0%, 透明 40%);
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: 居中;
             overflow: hidden;
         }
         /* 网格背景 */
         .grid-bg {
             position: fixed;
             inset: 0;
-            background-image: linear-gradient(rgba(0,170,255,0.08) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,170,255,0.08) 1px, transparent 1px);
+            背景图像: 线性渐变(rgba(0,170,255,0.08) 1px, 透明 1px),
+            linear-gradient(90度, rgba(0,170,255,0.08) 1px, transparent 1px);
             background-size: 40px 40px;
             pointer-events: none;
         }
