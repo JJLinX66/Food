@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星际美食抉择终端</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Orbitron", system-ui, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: #050816;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(0,180,255,0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(255,0,120,0.12) 0%, transparent 40%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        /* 网格背景 */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(rgba(0,170,255,0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,170,255,0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+        .title {
+            color: #00e5ff;
+            font-size: 28px;
+            letter-spacing: 6px;
+            text-shadow: 0 0 8px #00e5ff, 0 0 20px #0088aa;
+        }
+        /* 科幻主机盒子 */
+        .machine {
+            width: 340px;
+            height: 340px;
+            border: 2px solid #ff0088;
+            border-radius: 24px;
+            background: rgba(8,14,30,0.75);
+            box-shadow: 
+                0 0 15px #ff0088,
+                inset 0 0 30px rgba(0,180,255,0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .machine::before {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: conic-gradient(transparent, rgba(0,220,255,0.25), transparent 30%);
+            animation: rotate 4s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes rotate {
+            to {transform: rotate(360deg);}
+        }
+        .machine:hover {
+            border-color: #00ccff;
+            box-shadow: 0 0 25px #00ccff, inset 0 0 40px rgba(0,180,255,0.15);
+        }
+        .machine:active {
+            transform: scale(0.96);
+        }
+        .machine-text {
+            z-index: 2;
+            color: #00e5ff;
+            font-size: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px currentColor;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .machine.rolling .machine-text {
+            color: #ffdd00;
+            animation: blink 0.3s infinite;
+        }
+        @keyframes blink {
+            0%,100% {opacity: 1;}
+            50% {opacity: 0.25;}
+        }
+        .tip {
+            color: #88aacc;
+            letter-spacing: 2px;
+            font-size: 14px;
+        }
+        /* 弹窗 */
+        .modal-wrap {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-wrap.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal {
+            width: 320px;
+            padding: 40px 24px;
+            background: #080f22;
+            border: 2px solid #ff0088;
+            border-radius: 16px;
+            box-shadow: 0 0 25px #ff0088;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s;
+        }
+        .modal-wrap.show .modal {
+            transform: scale(1);
+        }
+        .modal h3 {
+            color: #ff77bb;
+            font-size: 18px;
+            letter-spacing: 3px;
+            margin-bottom: 24px;
+        }
+        .food-name {
+            font-size: 32px;
+            color: #fff;
+            text-shadow: 0 0 12px #ff0088;
+            margin-bottom: 32px;
+            min-height: 42px;
+        }
+        .modal-btn {
+            padding: 10px 26px;
+            border: 1px solid #ff0088;
+            background: transparent;
+            color: #ff77bb;
+            border-radius: 8px;
+            font-size: 15px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-btn:hover {
+            background: #ff0088;
+            color: #000;
+            box-shadow: 0 0 12px #ff0088;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="container">
+        <h1 class="title">FOOD RANDOM TERMINAL</h1>
+        <div class="machine" id="machine">
+            <div class="machine-text">点击启动<br>美食抽取</div>
+        </div>
+        <div class="tip">【抉择终端 · 随机生成今日餐食】</div>
+    </div>
+
+    <div class="modal-wrap" id="modalWrap">
+        <div class="modal">
+            <h3>✅ 今日推荐餐品</h3>
+            <div class="food-name" id="foodResult"></div>
+            <button class="modal-btn" id="closeBtn">确认选择</button>
+        </div>
+    </div>
+
+    <script>
+        // 美食菜单，包含KFC、麦当劳
+        const foodList = [
+            "牛肉面",
+            "螺蛳粉",
+            "长沙臭豆腐",
+            "黄焖鸡米饭",
+            "麻辣香锅",
+            "桂林米粉",
+            "重庆小面",
+            "烤肉拌饭",
+            "猪肚鸡",
+            "酸菜鱼",
+            "炒饭+汤",
+            "馄饨",
+            "麻辣烫",
+            "猪脚饭",
+            "过桥米线",
+            "炒粉",
+            "香辣小龙虾",
+            "羊肉粉",
+            "煲仔饭",
+            "酸辣粉",
+            "KFC",
+            "麦当劳"
+        ];
+
+        const machine = document.getElementById("machine");
+        const modalWrap = document.getElementById("modalWrap");
+        const foodResult = document.getElementById("foodResult");
+        const closeBtn = document.getElementById("closeBtn");
+
+        let isRolling = false;
+        machine.addEventListener("click", ()=>{
+            if(isRolling) return;
+            isRolling = true;
+            machine.classList.add("rolling");
+            let count = 0;
+            let timer = setInterval(()=>{
+                const randomIdx = Math.floor(Math.random() * foodList.length);
+                machine.querySelector(".machine-text").innerText = foodList[randomIdx];
+                count++;
+                if(count >= 18){
+                    clearInterval(timer);
+                    machine.classList.remove("rolling");
+                    const final = foodList[Math.floor(Math.random() * foodList.length)];
+                    foodResult.innerText = final;
+                    modalWrap.classList.add("show");
+                    isRolling = false;
+                }
+            }, 80);
+        })
+
+        closeBtn.onclick = ()=>{
+            modalWrap.classList.remove("show");
+        }
+        modalWrap.onclick = (e)=>{
+            if(e.target === modalWrap){
+                modalWrap.classList.remove("show");
+            }
+        }
+    </script>
+</body>
+</html>
