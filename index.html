@@ -1,252 +1,516 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>星际美食抉择终端</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            字体族: "Orbitron", 系统字体, 无衬线体;
-        }
-        主体 {
-            最小高度: 100视口高度;
-            background: #050816;
-            background-image: 
-                径向渐变(圆 位于 20% 20%, rgba(0,180,255,0.15) 0%, 透明 40%),
-                径向渐变(圆形 位于 80% 80%, rgba(255,0,120,0.12) 0%, 透明 40%);
-            display: flex;
-            align-items: center;
-            justify-content: 居中;
-            overflow: hidden;
-        }
-        /* 网格背景 */
-        .grid-bg {
-            position: fixed;
-            inset: 0;
-            背景图像: 线性渐变(rgba(0,170,255,0.08) 1px, 透明 1px),
-            linear-gradient(90度, rgba(0,170,255,0.08) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-        }
-        .container {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 40px;
-        }
-        .title {
-            color: #00e5ff;
-            font-size: 28px;
-            letter-spacing: 6px;
-            text-shadow: 0 0 8px #00e5ff, 0 0 20px #0088aa;
-        }
-        /* 科幻主机盒子 */
-        .machine {
-            width: 340px;
-            height: 340px;
-            border: 2px solid #ff0088;
-            border-radius: 24px;
-            background: rgba(8,14,30,0.75);
-            box-shadow: 
-                0 0 15px #ff0088,
-                inset 0 0 30px rgba(0,180,255,0.18);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .machine::before {
-            content: "";
-            position: absolute;
-            top: -100%;
-            left: -100%;
-            width: 300%;
-            height: 300%;
-            background: conic-gradient(transparent, rgba(0,220,255,0.25), transparent 30%);
-            animation: rotate 4s linear infinite;
-            pointer-events: none;
-        }
-        @keyframes rotate {
-            to {transform: rotate(360deg);}
-        }
-        .machine:hover {
-            border-color: #00ccff;
-            box-shadow: 0 0 25px #00ccff, inset 0 0 40px rgba(0,180,255,0.15);
-        }
-        .machine:active {
-            transform: scale(0.96);
-        }
-        .machine-text {
-            z-index: 2;
-            color: #00e5ff;
-            font-size: 20px;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px currentColor;
-            text-align: center;
-            line-height: 1.6;
-        }
-        .machine.rolling .machine-text {
-            color: #ffdd00;
-            animation: blink 0.3s infinite;
-        }
-        @keyframes blink {
-            0%,100% {opacity: 1;}
-            50% {opacity: 0.25;}
-        }
-        .tip {
-            color: #88aacc;
-            letter-spacing: 2px;
-            font-size: 14px;
-        }
-        /* 弹窗 */
-        .modal-wrap {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        .modal-wrap.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .modal {
-            width: 320px;
-            padding: 40px 24px;
-            background: #080f22;
-            border: 2px solid #ff0088;
-            border-radius: 16px;
-            box-shadow: 0 0 25px #ff0088;
-            text-align: center;
-            transform: scale(0.8);
-            transition: transform 0.3s;
-        }
-        .modal-wrap.show .modal {
-            transform: scale(1);
-        }
-        .modal h3 {
-            color: #ff77bb;
-            font-size: 18px;
-            letter-spacing: 3px;
-            margin-bottom: 24px;
-        }
-        .food-name {
-            font-size: 32px;
-            color: #fff;
-            text-shadow: 0 0 12px #ff0088;
-            margin-bottom: 32px;
-            min-height: 42px;
-        }
-        .modal-btn {
-            padding: 10px 26px;
-            border: 1px solid #ff0088;
-            background: transparent;
-            color: #ff77bb;
-            border-radius: 8px;
-            font-size: 15px;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .modal-btn:hover {
-            background: #ff0088;
-            color: #000;
-            box-shadow: 0 0 12px #ff0088;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>星际美食抉择终端</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    min-height: 100vh;
+  }
+
+  body {
+    font-family: "Orbitron", "Microsoft YaHei", sans-serif;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(0, 229, 255, 0.25), transparent 40%),
+      radial-gradient(circle at 80% 0%, rgba(255, 46, 182, 0.25), transparent 45%),
+      radial-gradient(circle at 50% 100%, rgba(0, 150, 255, 0.3), transparent 50%),
+      linear-gradient(180deg, #020617 0%, #050816 50%, #020617 100%);
+    color: #d6f6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* 网格背景 */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 229, 255, 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 229, 255, 0.12) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 75%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* 扫描线 */
+  .scanline {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 229, 255, 0.04) 0px,
+      rgba(0, 229, 255, 0.04) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* 粒子光点 */
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #00e5ff;
+    box-shadow: 0 0 8px #00e5ff;
+    animation: float 6s infinite ease-in-out;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+    50% { transform: translateY(-30px) scale(1.4); opacity: 1; }
+  }
+
+  /* 外发光边框容器 */
+  .outer-glow {
+    position: relative;
+    padding: 2px;
+    border-radius: 32px;
+    background: linear-gradient(135deg, #00e5ff, #ff2eb6, #00e5ff);
+    animation: borderRotate 8s linear infinite;
+  }
+  @keyframes borderRotate {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+  }
+
+  .container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    background: rgba(3, 8, 20, 0.85);
+    border-radius: 30px;
+    padding: 32px 20px;
+  }
+
+  /* 标题 */
+  h1 {
+    font-size: clamp(20px, 5vw, 28px);
+    letter-spacing: 6px;
+    color: #00e5ff;
+    text-align: center;
+    text-shadow:
+      0 0 8px #00e5ff,
+      0 0 22px #0088aa,
+      0 0 40px rgba(0, 180, 255, 0.6);
+    position: relative;
+  }
+
+  h1::before,
+  h1::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 28px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00e5ff);
+  }
+
+  h1::before { left: -36px; }
+  h1::after { right: -36px; background: linear-gradient(90deg, #00e5ff, transparent); }
+
+  .tip-main {
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: #b0d8ff;
+    text-align: center;
+  }
+
+  .count-info {
+    font-size:12px;
+    color:#7799bb;
+    letter-spacing:1px;
+  }
+
+  /* 主机盒子 */
+  .machine {
+    width: min(80vw, 320px);
+    height: min(80vw, 320px);
+    border-radius: 24px;
+    border: 1px solid rgba(0, 229, 255, 0.6);
+    background:
+      radial-gradient(circle at center, rgba(0, 40, 80, 0.6), rgba(5, 8, 22, 0.9));
+    box-shadow:
+      0 0 0 1px rgba(0, 229, 255, 0.25) inset,
+      0 0 20px rgba(0, 229, 255, 0.45),
+      0 0 60px rgba(0, 120, 255, 0.25),
+      0 0 120px rgba(255, 46, 182, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.3s ease;
+  }
+
+  .machine:hover {
+    border-color: #ff2eb6;
+    box-shadow:
+      0 0 0 1px rgba(255, 46, 182, 0.35) inset,
+      0 0 25px rgba(255, 46, 182, 0.55),
+      0 0 70px rgba(255, 46, 182, 0.35);
+  }
+
+  .machine:active {
+    transform: scale(0.97);
+  }
+
+  /* 旋转光环 */
+  .ring {
+    position: absolute;
+    inset: -12px;
+    border-radius: 28px;
+    border: 2px dashed rgba(0, 229, 255, 0.35);
+    animation: rotate 10s linear infinite;
+  }
+
+  .ring-2 {
+    position: absolute;
+    inset: -22px;
+    border-radius: 34px;
+    border: 1px dotted rgba(255, 46, 182, 0.35);
+    animation: rotate 14s linear infinite reverse;
+  }
+
+  @keyframes rotate {
+    to { transform: rotate(360deg); }
+  }
+
+  /* 扫描光束 */
+  .scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(0, 229, 255, 0.18),
+      transparent
+    );
+    top: -40%;
+    animation: scan 3s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes scan {
+    0% { top: -40%; }
+    100% { top: 100%; }
+  }
+
+  /* 中心文字 */
+  .machine-text {
+    position: relative;
+    z-index: 3;
+    font-size: clamp(20px,4vw,28px);
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #fff;
+    text-align: center;
+    text-shadow:
+      0 0 10px #00e5ff,
+      0 0 24px #0088aa,
+      0 0 40px rgba(0, 180, 255, 0.8);
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+    padding: 16px;
+    line-height: 1.5;
+  }
+
+  /* 滚动中效果 */
+  .machine.rolling .machine-text {
+    color: #ffdd00;
+    text-shadow:
+      0 0 10px #ffdd00,
+      0 0 24px #ff7700,
+      0 0 40px rgba(255, 150, 0, 0.8);
+    animation: flicker 0.12s infinite;
+  }
+
+  /* 结果定格效果 */
+  .machine.result .machine-text {
+    color: #ff2eb6;
+    text-shadow:
+      0 0 12px #ff2eb6,
+      0 0 28px #ff0088,
+      0 0 45px rgba(255, 0, 136, 0.9);
+    animation: resultPulse 0.6s ease-out;
+  }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  @keyframes resultPulse {
+    0% { transform: scale(0.7); opacity: 0; }
+    40% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* 角标 */
+  .corner {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-color: #00e5ff;
+    z-index: 4;
+  }
+
+  .corner.tl { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; }
+  .corner.tr { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
+  .corner.bl { bottom: 8px; left: 8px; border-bottom: 2px solid; border-left: 2px solid; }
+  .corner.br { bottom: 8px; right: 8px; border-bottom: 2px solid; border-right: 2px solid; }
+
+  /* 按钮区 */
+  .btn-group {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  button {
+    flex: 1;
+    min-width: 120px;
+    padding: 14px 16px;
+    font-size: 15px;
+    letter-spacing: 2px;
+    font-family: inherit;
+    color: #050816;
+    background: linear-gradient(135deg, #00e5ff, #00a8ff);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 800;
+    box-shadow:
+      0 0 12px rgba(0, 229, 255, 0.7),
+      0 0 28px rgba(0, 120, 255, 0.45),
+      inset 0 0 12px rgba(255, 255, 255, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 18px rgba(0, 229, 255, 0.9),
+      0 0 35px rgba(0, 120, 255, 0.65);
+  }
+
+  button.snack {
+    background: linear-gradient(135deg, #ff2eb6, #ff0088);
+    color: #fff;
+    box-shadow:
+      0 0 12px rgba(255, 46, 182, 0.7),
+      0 0 28px rgba(255, 0, 136, 0.45),
+      inset 0 0 12px rgba(255, 255, 255, 0.25);
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* 故障字 */
+  .glitch {
+    position: relative;
+    display: inline-block;
+  }
+
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .glitch::before {
+    color: #00e5ff;
+    animation: glitch1 2.5s infinite linear alternate-reverse;
+    clip-path: inset(0 0 70% 0);
+  }
+
+  .glitch::after {
+    color: #ff2eb6;
+    animation: glitch2 3s infinite linear alternate-reverse;
+    clip-path: inset(60% 0 0 0);
+  }
+
+  @keyframes glitch1 {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-2px, 1px); }
+    40% { transform: translate(2px, -1px); }
+    60% { transform: translate(-1px, -2px); }
+    80% { transform: translate(1px, 2px); }
+  }
+
+  @keyframes glitch2 {
+    0%, 100% { transform: translate(0); }
+    25% { transform: translate(2px, -1px); }
+    50% { transform: translate(-2px, 1px); }
+    75% { transform: translate(1px, 2px); }
+  }
+
+  /* 移动端适配 */
+  @media (max-width: 420px) {
+    h1::before, h1::after { display: none; }
+    .container {
+      padding: 24px 16px;
+      gap:20px;
+    }
+    button {
+      min-width: 110px;
+      padding:12px 14px;
+    }
+  }
+</style>
 </head>
 <body>
-    <div class="grid-bg"></div>
-    <div class="container">
-        <h1 class="title">FOOD RANDOM TERMINAL</h1>
-        <div class="machine" id="machine">
-            <div class="machine-text">点击启动<br>美食抽取</div>
-        </div>
-        <div class="tip">【抉择终端 · 随机生成今日餐食】</div>
+
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+<div class="particles" id="particles"></div>
+
+<div class="outer-glow">
+  <div class="container">
+    <h1 class="glitch" data-text="FOOD TERMINAL">FOOD TERMINAL</h1>
+
+    <div class="tip-main">请选择你的今日美食</div>
+    <div class="count-info">正餐共：<span id="dinnerTotal">20</span> 种 &nbsp;|&nbsp; 小食共：<span id="snackTotal">20</span> 种</div>
+
+    <div class="machine" id="machine">
+      <div class="ring"></div>
+      <div class="ring-2"></div>
+      <div class="scan"></div>
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+      <div class="machine-text" id="machineText">点击启动<br>美食抽取</div>
     </div>
 
-    <div class="modal-wrap" id="modalWrap">
-        <div class="modal">
-            <h3>✅ 今日推荐餐品</h3>
-            <div class="food-name" id="foodResult"></div>
-            <button class="modal-btn" id="closeBtn">确认选择</button>
-        </div>
+    <div class="btn-group">
+      <button id="dinnerBtn">正餐</button>
+      <button id="snackBtn" class="snack">小食</button>
     </div>
+  </div>
+</div>
 
-    <script>
-        // 美食菜单，包含KFC、麦当劳
-        const foodList = [
-            "牛肉面",
-            "螺蛳粉",
-            "长沙臭豆腐",
-            "黄焖鸡米饭",
-            "麻辣香锅",
-            "桂林米粉",
-            "重庆小面",
-            "烤肉拌饭",
-            "猪肚鸡",
-            "酸菜鱼",
-            "炒饭+汤",
-            "馄饨",
-            "麻辣烫",
-            "猪脚饭",
-            "过桥米线",
-            "炒粉",
-            "香辣小龙虾",
-            "羊肉粉",
-            "煲仔饭",
-            "酸辣粉",
-            "KFC",
-            "麦当劳"
-        ];
+<script>
+  // 正餐列表 20个
+  const dinnerList = [
+    "牛肉面", "螺蛳粉", "黄焖鸡米饭",
+    "麻辣香锅", "桂林米粉", "重庆小面", "烤肉拌饭",
+    "凉面", "冒菜", "炒饭", "馄饨",
+    "麻辣烫", "猪脚饭", "过桥米线", "炒粉",
+    "羊肉粉", "煲仔饭", "酸辣粉",
+    "KFC", "麦当劳","卤粉","牛肉粉"
+  ];
+  // 小食列表 20个
+  const snackList = [
+    "炸串", "KFC", "麦当劳", "奶茶",
+    "手抓饼", "臭豆腐", "烤肠", "章鱼小丸子",
+    "烧烤", "蛋挞", "薯片", "榴莲千层",
+    "炸鸡", "冰粉", "关东煮", "梅菜扣肉饼",
+    "辣条", "牛肉干", "巧克力", "蛋糕"
+  ];
 
-        const machine = document.getElementById("machine");
-        const modalWrap = document.getElementById("modalWrap");
-        const foodResult = document.getElementById("foodResult");
-        const closeBtn = document.getElementById("closeBtn");
+  document.getElementById("dinnerTotal").textContent = dinnerList.length;
+  document.getElementById("snackTotal").textContent = snackList.length;
 
-        let isRolling = false;
-        machine.addEventListener("click", ()=>{
-            if(isRolling) return;
-            isRolling = true;
-            machine.classList.add("rolling");
-            let count = 0;
-            let timer = setInterval(()=>{
-                const randomIdx = Math.floor(Math.random() * foodList.length);
-                machine.querySelector(".machine-text").innerText = foodList[randomIdx];
-                count++;
-                if(count >= 18){
-                    clearInterval(timer);
-                    machine.classList.remove("rolling");
-                    const final = foodList[Math.floor(Math.random() * foodList.length)];
-                    foodResult.innerText = final;
-                    modalWrap.classList.add("show");
-                    isRolling = false;
-                }
-            }, 80);
-        })
+  const machine = document.getElementById("machine");
+  const machineText = document.getElementById("machineText");
+  const dinnerBtn = document.getElementById("dinnerBtn");
+  const snackBtn = document.getElementById("snackBtn");
+  const particlesBox = document.getElementById("particles");
 
-        closeBtn.onclick = ()=>{
-            modalWrap.classList.remove("show");
-        }
-        modalWrap.onclick = (e)=>{
-            if(e.target === modalWrap){
-                modalWrap.classList.remove("show");
-            }
-        }
-    </script>
+  let isRolling = false;
+
+  // 生成粒子
+  function createParticles() {
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.left = Math.random() * 100 + "vw";
+      p.style.top = Math.random() * 100 + "vh";
+      p.style.animationDelay = Math.random() * 6 + "s";
+      p.style.animationDuration = (4 + Math.random() * 4) + "s";
+      particlesBox.appendChild(p);
+    }
+  }
+  createParticles();
+
+  function startDraw(list) {
+    if (isRolling) return;
+    isRolling = true;
+    machine.classList.remove("result");
+    machine.classList.add("rolling");
+    dinnerBtn.disabled = true;
+    snackBtn.disabled = true;
+
+    let count = 0;
+    const total = 22;
+    let speed = 70;
+
+    function roll() {
+      const randomItem = list[Math.floor(Math.random() * list.length)];
+      machineText.innerHTML = randomItem;
+      count++;
+
+      if (count < total) {
+        if (count > total - 6) speed += 40;
+        if (count > total - 3) speed += 60;
+        setTimeout(roll, speed);
+      } else {
+        machine.classList.remove("rolling");
+        machine.classList.add("result");
+        machineText.innerHTML = list[Math.floor(Math.random() * list.length)];
+        isRolling = false;
+        dinnerBtn.disabled = false;
+        snackBtn.disabled = false;
+      }
+    }
+
+    roll();
+  }
+
+  dinnerBtn.addEventListener("click", () => startDraw(dinnerList));
+  snackBtn.addEventListener("click", () => startDraw(snackList));
+  machine.addEventListener("click", () => startDraw(dinnerList));
+</script>
+
 </body>
 </html>
